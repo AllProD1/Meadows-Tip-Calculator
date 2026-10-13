@@ -1,0 +1,745 @@
+<!-- Meadows Ice Cream Tip Distributor -->
+<meta charset="UTF-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{width:100%;display:flex;flex-direction:column}
+.topbar{background:#0D5DAA;padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:16px;font-weight:500}
+.topbar-brand .dot{width:28px;height:28px;border-radius:50%;background:#4A8FF7;display:flex;align-items:center;justify-content:center;font-size:15px}
+.topbar-step{font-size:12px;color:rgba(255,255,255,0.55);padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,0.2)}
+.topbar-step.active{background:rgba(255,255,255,0.15);color:#fff;border-color:transparent}
+.topbar-step.done{color:rgba(255,255,255,0.75);border-color:rgba(255,255,255,0.3)}
+.body{display:flex}
+.sidebar{width:260px;background:#f5f7fa;border-right:0.5px solid #e0e4ea;padding:1.5rem 1.25rem;flex-shrink:0}
+.sidebar-section{margin-bottom:1.75rem}
+.sidebar-title{font-size:11px;font-weight:500;color:#9aa3b0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.sidebar-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:4px}
+.sidebar-item.active{background:#fff;border:0.5px solid #d0d7e2}
+.sidebar-item .si-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.sidebar-item.active .si-icon{background:#E6F0FF;color:#0E4F9F}
+.sidebar-item:not(.active) .si-icon{background:#eaecf0;color:#9aa3b0}
+.si-label{font-size:13px;font-weight:500;color:#1a202c}
+.si-sub{font-size:12px;color:#6b7280;margin-top:2px}
+.sidebar-item:not(.active) .si-label{color:#6b7280}
+.sidebar-divider{height:0.5px;background:#e0e4ea;margin:1rem 0}
+.hint-box{background:#fff;border:0.5px solid #e0e4ea;border-radius:8px;padding:12px;font-size:12px;color:#6b7280;line-height:1.6}
+.main{flex:1;padding:2rem;min-width:0}
+.page-title{font-size:20px;font-weight:500;color:#1a202c;margin-bottom:4px}
+.page-sub{font-size:13px;color:#6b7280;margin-bottom:1.75rem}
+.upload-card{background:#fff;border:0.5px solid #e0e4ea;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+.upload-card h3{font-size:15px;font-weight:500;color:#1a202c;margin-bottom:6px}
+.upload-card p{font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:1rem}
+.upload-zone{border:1.5px dashed #c8d0dc;border-radius:8px;padding:1.75rem;text-align:center;cursor:pointer}
+.upload-zone:hover{background:#f5f7fa}
+.upload-zone.has-file{border-color:#4A8FF7;background:#EBF2FF}
+.uz-icon{width:44px;height:44px;border-radius:8px;background:#E6F0FF;color:#0E4F9F;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px}
+.uz-label{font-size:14px;font-weight:500;color:#1a202c}
+.uz-sub{font-size:12px;color:#6b7280;margin-top:4px}
+.file-input{display:none}
+.file-pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:6px 14px;border-radius:99px;margin-top:12px}
+.pill-ok{background:#E6F0FF;color:#0E4F9F}
+.pill-warn{background:#FAEEDA;color:#633806}
+.pill-err{background:#FDECEA;color:#A32D2D}
+.primary-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;font-size:14px;font-weight:500;background:#3A82F1;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:1.25rem}
+.primary-btn:hover{background:#0D5DAA}
+.primary-btn:disabled{opacity:.4;cursor:not-allowed}
+.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.preview-table th{font-size:11px;color:#6b7280;text-align:left;padding:5px 8px;border-bottom:0.5px solid #e0e4ea;font-weight:500}
+.preview-table td{padding:5px 8px;color:#6b7280;border-bottom:0.5px solid #e0e4ea}
+.preview-table tr:last-child td{border-bottom:none}
+.alert{border-radius:8px;padding:11px 14px;font-size:13px;line-height:1.55;margin-top:10px;display:flex;gap:9px;align-items:flex-start}
+.alert-warn{background:#FAEEDA;color:#633806}
+.alert-err{background:#FDECEA;color:#A32D2D}
+.alert-ok{background:#E6F0FF;color:#0B4B92}
+.alert-info{background:#f5f7fa;color:#6b7280;border:0.5px solid #e0e4ea}
+.alert strong{font-weight:600}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:1.5rem}
+.metric{background:#f5f7fa;border-radius:8px;padding:1rem 1.25rem}
+.metric .mlabel{font-size:12px;color:#6b7280;margin-bottom:6px}
+.metric .mval{font-size:22px;font-weight:500;color:#1a202c}
+.results-card{background:#fff;border:0.5px solid #e0e4ea;border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.results-card-head{padding:1rem 1.25rem;border-bottom:0.5px solid #e0e4ea;display:flex;align-items:center;justify-content:space-between}
+.results-card-head h3{font-size:14px;font-weight:500;color:#1a202c}
+.btn-row{display:flex;gap:8px}
+.ghost-btn{font-size:13px;color:#6b7280;background:none;border:0.5px solid #c8d0dc;border-radius:8px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.teal-btn{font-size:13px;color:#0E4F9F;background:#E6F0FF;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:5px}
+.emp-table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
+.emp-table th{text-align:left;font-weight:500;font-size:12px;color:#6b7280;padding:10px 16px;border-bottom:0.5px solid #e0e4ea;background:#f5f7fa}
+.emp-table td{padding:13px 16px;border-bottom:0.5px solid #e0e4ea;color:#1a202c;vertical-align:middle}
+.emp-table tr:last-child td{border-bottom:none}
+.emp-table tr:hover td{background:#f5f7fa}
+.emp-table tr.owner-row td{background:rgba(14,79,159,0.05)}
+.tip-amt{font-weight:500;color:#0E4F9F;font-size:15px}
+.emp-init{width:32px;height:32px;border-radius:50%;background:#E6F0FF;color:#0E4F9F;font-size:11px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;flex-shrink:0}
+.emp-init.owner{background:#0E4F9F;color:#fff}
+.name-cell{display:flex;align-items:center}
+.owner-tag{font-size:10px;font-weight:500;background:#0E4F9F;color:#fff;border-radius:99px;padding:2px 7px;margin-left:8px}
+.bar-wrap{width:70px;background:#eaecf0;border-radius:99px;height:6px;display:inline-block;vertical-align:middle;margin-left:6px}
+.bar-fill{height:6px;border-radius:99px;background:#3A82F1}
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500}
+.badge-blue{background:#E6F0FF;color:#0E4F9F}
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-brand"><div class="dot">🍦</div>Meadows tip distributor</div>
+    <div class="topbar-right" style="display:flex;gap:8px">
+      <span class="topbar-step active" id="pill1">1 · Square tips</span>
+      <span class="topbar-step" id="pill2">2 · Shift schedule</span>
+      <span class="topbar-step" id="pill3">3 · Results</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Steps</div>
+        <div class="sidebar-item active" id="sb1">
+          <div class="si-icon">💳</div>
+          <div><div class="si-label">Square export</div><div class="si-sub">Tips &amp; timestamps</div></div>
+        </div>
+        <div class="sidebar-item" id="sb2">
+          <div class="si-icon">🗓</div>
+          <div><div class="si-label">Shift schedule</div><div class="si-sub">When I Work file</div></div>
+        </div>
+        <div class="sidebar-item" id="sb3">
+          <div class="si-icon">📊</div>
+          <div><div class="si-label">Results</div><div class="si-sub">Per-employee totals</div></div>
+        </div>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Owner</div>
+        <div class="hint-box"><strong>Hope Mays</strong> receives all tips made when no staff are clocked in.</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">How it works</div>
+        <div class="hint-box">Tips go to staff on shift at that moment. Refunds are netted out automatically. Tips during unstaffed times go to the owner.</div>
+      </div>
+    </div>
+    <div class="main">
+
+      <!-- Step 1 -->
+      <div id="step1">
+        <div class="page-title">Upload Square tips</div>
+        <div class="page-sub">Export your transactions from Square for the pay period.</div>
+        <div class="upload-card">
+          <h3>Square transactions export</h3>
+          <p>Go to Square Dashboard → Reports → Transactions → choose your date range → Export.</p>
+          <div class="upload-zone" id="squareZone" onclick="document.getElementById('squareFile').click()">
+            <div class="uz-icon">⬆️</div>
+            <div class="uz-label">Click to upload Square file</div>
+            <div class="uz-sub">Accepts .csv or .xlsx</div>
+          </div>
+          <input class="file-input" type="file" id="squareFile" accept=".csv,.xlsx,.xls" onchange="handleSquareCSV(event)" />
+          <div id="squareBadge" style="display:none"></div>
+          <div id="squareAlerts" style="display:none"></div>
+          <div id="squarePreview" style="display:none;margin-top:12px"></div>
+        </div>
+        <button class="primary-btn" id="toStep2Btn" disabled onclick="goToStep2()">Continue to shift schedule →</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="step2" style="display:none">
+        <div class="page-title">Upload shift schedule</div>
+        <div class="page-sub">Export the timesheet from When I Work for the same pay period.</div>
+        <div class="upload-card">
+          <h3>When I Work timesheets export</h3>
+          <p>Go to Timesheets → choose your date range → Export. Both CSV and XLSX are supported.</p>
+          <div class="upload-zone" id="wiwZone" onclick="document.getElementById('wiwFile').click()">
+            <div class="uz-icon">🗓</div>
+            <div class="uz-label">Click to upload When I Work file</div>
+            <div class="uz-sub">Accepts .csv or .xlsx</div>
+          </div>
+          <input class="file-input" type="file" id="wiwFile" accept=".csv,.xlsx,.xls" onchange="handleWIWCSV(event)" />
+          <div id="wiwBadge" style="display:none"></div>
+          <div id="wiwAlerts" style="display:none"></div>
+          <div id="wiwPreview" style="display:none;margin-top:12px"></div>
+        </div>
+        <button class="primary-btn" id="calcBtn" disabled onclick="calculate()">Calculate tip distribution →</button>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="step3" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px">
+          <div>
+            <div class="page-title" style="margin-bottom:2px">Tip distribution</div>
+            <div class="page-sub" style="margin-bottom:0">Each tip matched to on-shift employees at that moment</div>
+          </div>
+          <div class="btn-row">
+            <button class="ghost-btn" onclick="resetAll()">↺ Start over</button>
+            <button class="teal-btn" onclick="exportCSV()">⬇ Export CSV</button>
+          </div>
+        </div>
+        <div class="metric-grid" id="metricGrid"></div>
+        <div id="resultsAlerts"></div>
+        <div class="results-card">
+          <div class="results-card-head">
+            <h3>Employee breakdown</h3>
+            <span class="badge badge-blue" id="empCountBadge"></span>
+          </div>
+          <table class="emp-table">
+            <colgroup><col style="width:30%"><col style="width:14%"><col style="width:10%"><col style="width:24%"><col style="width:22%"></colgroup>
+            <thead><tr><th>Employee</th><th>Tips received</th><th>Shifts</th><th>Share of total</th><th>Amount earned</th></tr></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const OWNER_NAME = 'Hope Mays';
+let squareTips = [];
+let squareRefunds = [];
+let squareMeta = {};
+let shifts = [];
+let wiwMeta = {};
+
+// ── CSV parser: handles quoted commas, quotes, and embedded line breaks ──
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cur = '', inQ = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+
+    if (ch === '"') {
+      if (inQ && next === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      row.push(cur.trim());
+      cur = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQ) {
+      if (ch === '\r' && next === '\n') i++;
+      row.push(cur.trim());
+      if (row.some(v => v !== '')) rows.push(row);
+      row = [];
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+
+  row.push(cur.trim());
+  if (row.some(v => v !== '')) rows.push(row);
+  return rows;
+}
+
+// ── Universal file reader (CSV or XLSX → array of row arrays) ──
+function readFileAsRows(file, callback) {
+  const isXLSX = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+  if (isXLSX) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const workbook = XLSX.read(ev.target.result, { type: 'array', cellDates: true });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+      callback(rows.filter(row => row.some(v => String(v).trim() !== '')));
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      callback(parseCSV(ev.target.result));
+    };
+    reader.readAsText(file);
+  }
+}
+
+// ── Number parser ────────────────────────────────────────────
+// Handles: $1.22  ($0.52)  -$0.52  -0.52
+function cleanNum(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  if (s.startsWith('(') && s.endsWith(')')) s = '-' + s.slice(1, -1);
+  s = s.replace(/^-\$/, '-');
+  const n = parseFloat(s.replace(/[$,\s]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+// ── Square datetime parser ───────────────────────────────────
+// Handles both export formats:
+//   Old: Date="5/9/2026"    Time="15:08:57"
+//   New: Date="2026-05-22"  Time="20:44:54"
+function parseSquareDT(dateStr, timeStr) {
+  if (!dateStr || !timeStr) return null;
+  dateStr = dateStr.trim(); timeStr = timeStr.trim();
+
+  // Format 1: M/D/YYYY
+  const dm = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (dm) {
+    const tm = timeStr.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i);
+    if (tm) {
+      let h = parseInt(tm[1]), mn = parseInt(tm[2]);
+      if (tm[4]) { if (tm[4].toUpperCase()==='PM'&&h<12) h+=12; if (tm[4].toUpperCase()==='AM'&&h===12) h=0; }
+      return new Date(parseInt(dm[3]), parseInt(dm[1])-1, parseInt(dm[2]), h, mn, parseInt(tm[3]||0));
+    }
+  }
+
+  // Format 2: YYYY-MM-DD (new Square ISO export)
+  const iso = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const tm = timeStr.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i);
+    if (tm) {
+      let h = parseInt(tm[1]), mn = parseInt(tm[2]);
+      if (tm[4]) { if (tm[4].toUpperCase()==='PM'&&h<12) h+=12; if (tm[4].toUpperCase()==='AM'&&h===12) h=0; }
+      return new Date(parseInt(iso[1]), parseInt(iso[2])-1, parseInt(iso[3]), h, mn, parseInt(tm[3]||0));
+    }
+  }
+
+  const d = new Date(dateStr + ' ' + timeStr);
+  return isNaN(d) ? null : d;
+}
+
+// ── WIW datetime parser ──────────────────────────────────────
+function parseWIWDT(dateStr, timeStr) {
+  if (!dateStr || !timeStr) return null;
+  dateStr = dateStr.replace(/^"/, '').replace(/"$/, '').trim();
+  timeStr = timeStr.trim();
+  if (!/\d/.test(dateStr)) return null;
+
+  // Excel serial date number
+  if (/^\d{5}(\.\d+)?$/.test(dateStr)) {
+    const serial = parseFloat(dateStr);
+    const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+    const timeFrac = parseFloat(timeStr);
+    if (!isNaN(timeFrac) && timeFrac < 1) {
+      const ms = Math.round(timeFrac * 86400000);
+      d.setHours(0,0,0,0);
+      d.setMilliseconds(ms);
+    } else {
+      const tm = timeStr.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+      if (tm) {
+        let h = parseInt(tm[1]), mn = parseInt(tm[2]);
+        if (tm[4]) { if (tm[4].toUpperCase()==='PM'&&h<12) h+=12; if (tm[4].toUpperCase()==='AM'&&h===12) h=0; }
+        d.setHours(h, mn, 0, 0);
+      }
+    }
+    return isNaN(d) ? null : d;
+  }
+
+  let d = new Date(dateStr + ' ' + timeStr);
+  if (!isNaN(d)) return d;
+  d = new Date(dateStr);
+  if (!isNaN(d)) {
+    const tm = timeStr.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+    if (tm) {
+      let h = parseInt(tm[1]), mn = parseInt(tm[2]);
+      if (tm[4]) { if (tm[4].toUpperCase()==='PM'&&h<12) h+=12; if (tm[4].toUpperCase()==='AM'&&h===12) h=0; }
+      d.setHours(h, mn, parseInt(tm[3]||0), 0);
+      return d;
+    }
+  }
+  return null;
+}
+
+function fmtDT(d) {
+  if (!d) return '—';
+  return d.toLocaleDateString('en-US',{month:'numeric',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function initials(name) { return name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2); }
+
+function makeAlert(type, icon, html) {
+  const icons = { warn:'⚠', err:'✖', ok:'✔', info:'ℹ' };
+  return `<div class="alert alert-${type}"><span style="flex-shrink:0;margin-top:1px">${icons[icon]||icon}</span><div>${html}</div></div>`;
+}
+
+// ── SQUARE handler ───────────────────────────────────────────
+function handleSquareCSV(e) {
+  const file = e.target.files[0]; if (!file) return;
+  readFileAsRows(file, rows => {
+    if (rows.length < 2) { showSquareError('File appears empty.'); return; }
+
+    const header = rows[0].map(h => String(h).toLowerCase().replace(/[^a-z0-9]/g,''));
+
+    const dateCol  = header.findIndex(h => h === 'date');
+    const timeCol  = header.findIndex(h => h === 'time');
+    const tipCol   = header.findIndex(h => h === 'tip' || h === 'tips');
+    // ── KEY FIX: prefer Payment ID over Transaction ID for refund matching ──
+    // Square refunds share Payment ID with the original charge, but have a
+    // different Transaction ID. Checking Payment ID first guarantees the match.
+    const payIdCol = header.findIndex(h => h === 'paymentid');
+    const txIdCol  = header.findIndex(h => h === 'transactionid');
+    const idCol    = payIdCol >= 0 ? payIdCol : txIdCol; // Payment ID wins
+
+    const missing = [];
+    if (dateCol < 0) missing.push('Date');
+    if (timeCol < 0) missing.push('Time');
+    if (tipCol  < 0) missing.push('Tip');
+    if (missing.length) {
+      showSquareError(`Missing required columns: <strong>${missing.join(', ')}</strong>. Make sure you're uploading a Square transactions export.`);
+      return;
+    }
+
+    squareTips = []; squareRefunds = [];
+    const allDates = [];
+    let parseFailCount = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i];
+      const tipVal = cleanNum(cols[tipCol] || '');
+      if (tipVal === null || tipVal === 0) continue;
+
+      const dateRaw = cols[dateCol] || '';
+      const timeRaw = cols[timeCol] || '';
+      const txId    = idCol >= 0 ? cols[idCol] : '';
+      const dt      = parseSquareDT(dateRaw, timeRaw);
+
+      if (dt) allDates.push(dt);
+      else if (tipVal > 0) parseFailCount++;
+
+      if (tipVal < 0) {
+        squareRefunds.push({ amt: tipVal, dt, txId, dateRaw, timeRaw });
+      } else {
+        squareTips.push({ tip: tipVal, dt, txId, dateRaw, timeRaw });
+      }
+    }
+
+    // ── Refund netting: Payment ID match (primary) ──────────
+    squareRefunds.forEach(refund => {
+      if (!refund.txId) return;
+      const match = squareTips.find(t => t.txId === refund.txId);
+      if (match) {
+        match.tip += refund.amt;          // reduce tip by refund amount
+        if (match.tip <= 0) match._drop = true; // fully refunded
+        refund._matched = true;
+      }
+    });
+
+    // ── Refund netting: time fallback (within 60s) ──────────
+    squareRefunds.filter(r => !r._matched).forEach(refund => {
+      const match = squareTips.find(t => t.dt && refund.dt && Math.abs(t.dt - refund.dt) < 60000);
+      if (match) {
+        match.tip += refund.amt;
+        if (match.tip <= 0) match._drop = true;
+        refund._matched = true;
+      }
+    });
+
+    squareTips = squareTips.filter(t => !t._drop && t.tip > 0);
+
+    squareMeta = allDates.length
+      ? { minDate: new Date(Math.min(...allDates)), maxDate: new Date(Math.max(...allDates)) }
+      : {};
+
+    const total = squareTips.reduce((s,t) => s+t.tip, 0);
+    const noTs  = squareTips.filter(t => !t.dt).length;
+    const alerts = [];
+
+    if (parseFailCount > 0)
+      alerts.push(makeAlert('warn','warn',`<strong>${parseFailCount} tip row${parseFailCount>1?'s':''} had timestamps we couldn't read.</strong> Double-check your Square export format. These tips will be credited to Hope Mays.`));
+
+    if (squareRefunds.length > 0) {
+      const refundTotal = Math.abs(squareRefunds.reduce((s,r) => s+r.amt, 0));
+      const unmatched   = squareRefunds.filter(r => !r._matched).length;
+      let msg = `<strong>${squareRefunds.length} refund${squareRefunds.length>1?'s':''} detected</strong> ($${refundTotal.toFixed(2)} total) — netted out of the tip pool automatically.`;
+      if (unmatched > 0) msg += ` <strong>${unmatched} could not be matched</strong> to an original tip — check your export.`;
+      alerts.push(makeAlert('info','info', msg));
+    }
+
+    if (squareMeta.minDate)
+      alerts.push(makeAlert('ok','ok',`Tips span <strong>${fmtDate(squareMeta.minDate)}</strong> to <strong>${fmtDate(squareMeta.maxDate)}</strong>.`));
+
+    setBadge('squareBadge', `${squareTips.length} tips — $${total.toFixed(2)} net`, noTs > 0 ? 'warn' : 'ok');
+    document.getElementById('squareZone').classList.add('has-file');
+    renderAlerts('squareAlerts', alerts);
+    showSquarePreview(squareTips.slice(0,4));
+    if (squareTips.length > 0) document.getElementById('toStep2Btn').disabled = false;
+  });
+}
+
+function showSquareError(msg) {
+  setBadge('squareBadge', 'Could not read file', 'err');
+  renderAlerts('squareAlerts', [makeAlert('err','err', msg)]);
+  document.getElementById('toStep2Btn').disabled = true;
+}
+
+function showSquarePreview(rows) {
+  const div = document.getElementById('squarePreview');
+  div.style.display = 'block';
+  div.innerHTML = `<div style="font-size:12px;color:#6b7280;margin-bottom:6px">Preview — first ${rows.length} tips:</div>
+  <table class="preview-table"><thead><tr><th>Date</th><th>Time</th><th>Parsed as</th><th>Tip</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${r.dateRaw||'—'}</td><td>${r.timeRaw||'—'}</td><td>${r.dt?fmtDT(r.dt):'<span style="color:#A32D2D">⚠ failed</span>'}</td><td>$${r.tip.toFixed(2)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── WIW handler ──────────────────────────────────────────────
+function handleWIWCSV(e) {
+  const file = e.target.files[0]; if (!file) return;
+  readFileAsRows(file, rows => {
+    if (rows.length < 2) { showWIWError('File appears empty.'); return; }
+
+    const header = rows[0].map(h => String(h).toLowerCase().replace(/[^a-z0-9]/g,''));
+
+    const firstCol = header.findIndex(h => h==='firstname' || h==='first');
+    const lastCol  = header.findIndex(h => h==='lastname'  || h==='last');
+    const nameCol  = header.findIndex(h => h==='name' || h==='employee' || h==='fullname');
+    const dateCol  = header.findIndex(h => h==='date');
+    const startCol = header.findIndex(h => h==='starttime' || h==='start');
+    const endCol   = header.findIndex(h => h==='endtime'   || h==='end');
+
+    const missing = [];
+    if (firstCol < 0 && lastCol < 0 && nameCol < 0) missing.push('Name / First Name / Last Name');
+    if (dateCol  < 0) missing.push('Date');
+    if (startCol < 0) missing.push('Start Time');
+    if (endCol   < 0) missing.push('End Time');
+    if (missing.length) { showWIWError(`Missing required columns: <strong>${missing.join(', ')}</strong>.`); return; }
+
+    shifts = [];
+    let junkRows = 0, parseFailRows = 0;
+    const allDates = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const cols = rows[i];
+      const rawDate = dateCol >= 0 ? cols[dateCol] : '';
+      if (!rawDate || rawDate.trim().toLowerCase() === 'date') { junkRows++; continue; }
+
+      let name = '';
+      if (firstCol >= 0 || lastCol >= 0) {
+        const first = (firstCol>=0 ? cols[firstCol] : '').replace(/"/g,'').trim();
+        const last  = (lastCol >=0 ? cols[lastCol]  : '').replace(/"/g,'').trim();
+        name = [first, last].filter(Boolean).join(' ');
+      } else if (nameCol >= 0) {
+        name = cols[nameCol].replace(/"/g,'').trim();
+      }
+      if (!name) continue;
+
+      const start = parseWIWDT(rawDate, startCol>=0 ? cols[startCol] : '');
+      const end   = parseWIWDT(rawDate, endCol  >=0 ? cols[endCol]   : '');
+
+      if (!start || !end) { parseFailRows++; continue; }
+      if (end < start)    { parseFailRows++; continue; }
+      allDates.push(start, end);
+      shifts.push({ name, start, end });
+    }
+
+    wiwMeta = allDates.length
+      ? { minDate: new Date(Math.min(...allDates)), maxDate: new Date(Math.max(...allDates)) }
+      : {};
+
+    const empCount = [...new Set(shifts.map(s=>s.name))].length;
+    const alerts = [];
+
+    if (parseFailRows > 0)
+      alerts.push(makeAlert('warn','warn',`<strong>${parseFailRows} shift row${parseFailRows>1?'s':''} could not be parsed</strong> and were skipped. As long as the shift count looks right, this is likely extra rows in the file.`));
+    if (junkRows > 0)
+      alerts.push(makeAlert('info','info',`${junkRows} blank or duplicate header row${junkRows>1?'s were':' was'} skipped automatically.`));
+
+    if (squareMeta.minDate && wiwMeta.minDate) {
+      const overlapStart = Math.max(squareMeta.minDate, wiwMeta.minDate);
+      const overlapEnd   = Math.min(squareMeta.maxDate, wiwMeta.maxDate);
+      if (overlapStart > overlapEnd) {
+        alerts.push(makeAlert('err','err',
+          `<strong>Date ranges do not overlap.</strong><br>
+           Square tips: ${fmtDate(squareMeta.minDate)} – ${fmtDate(squareMeta.maxDate)}<br>
+           Shift schedule: ${fmtDate(wiwMeta.minDate)} – ${fmtDate(wiwMeta.maxDate)}<br>
+           Make sure both exports cover the same pay period.`));
+        document.getElementById('calcBtn').disabled = true;
+      } else {
+        const tipDaysOutside = squareTips.filter(t => t.dt && (t.dt < wiwMeta.minDate || t.dt > wiwMeta.maxDate)).length;
+        if (tipDaysOutside > 0) {
+          alerts.push(makeAlert('warn','warn',
+            `<strong>${tipDaysOutside} tip${tipDaysOutside>1?'s':''} fall outside the shift schedule range</strong> and will be credited to Hope Mays.<br>
+             Square: ${fmtDate(squareMeta.minDate)} – ${fmtDate(squareMeta.maxDate)} | Schedule: ${fmtDate(wiwMeta.minDate)} – ${fmtDate(wiwMeta.maxDate)}`));
+        } else {
+          alerts.push(makeAlert('ok','ok',`Shift schedule spans <strong>${fmtDate(wiwMeta.minDate)}</strong> to <strong>${fmtDate(wiwMeta.maxDate)}</strong> — matches tip period.`));
+        }
+        if (shifts.length > 0) document.getElementById('calcBtn').disabled = false;
+      }
+    } else {
+      if (wiwMeta.minDate) alerts.push(makeAlert('ok','ok',`Schedule spans <strong>${fmtDate(wiwMeta.minDate)}</strong> to <strong>${fmtDate(wiwMeta.maxDate)}</strong>.`));
+      if (shifts.length > 0) document.getElementById('calcBtn').disabled = false;
+    }
+
+    setBadge('wiwBadge', `${shifts.length} shifts — ${empCount} employees`, 'ok');
+    document.getElementById('wiwZone').classList.add('has-file');
+    renderAlerts('wiwAlerts', alerts);
+    showWIWPreview(shifts.slice(0,4));
+  });
+}
+
+function showWIWError(msg) {
+  setBadge('wiwBadge', 'Could not read file', 'err');
+  renderAlerts('wiwAlerts', [makeAlert('err','err', msg)]);
+  document.getElementById('calcBtn').disabled = true;
+}
+
+function showWIWPreview(rows) {
+  const div = document.getElementById('wiwPreview');
+  div.style.display = 'block';
+  div.innerHTML = `<div style="font-size:12px;color:#6b7280;margin-bottom:6px">Preview — first ${rows.length} shifts:</div>
+  <table class="preview-table"><thead><tr><th>Employee</th><th>Start</th><th>End</th><th>Status</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td>${r.name}</td><td>${fmtDT(r.start)}</td><td>${fmtDT(r.end)}</td><td style="color:#1D9E75">✓ ok</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── Calculation ──────────────────────────────────────────────
+function onShift(name, t) { return shifts.some(s => s.name===name && s.start<=t && t<=s.end); }
+
+function calculate() {
+  const empNames = [...new Set(shifts.map(s => s.name))];
+  const earnings = {};
+  empNames.forEach(n => earnings[n] = { tips:0, tipEvents:0 });
+  earnings[OWNER_NAME] = { tips:0, tipEvents:0, isOwner:true };
+
+  let ownerEvents = 0;
+
+  squareTips.forEach(tip => {
+    if (!tip.dt) {
+      earnings[OWNER_NAME].tips += tip.tip;
+      earnings[OWNER_NAME].tipEvents++;
+      ownerEvents++;
+      return;
+    }
+    const onDuty = empNames.filter(n => onShift(n, tip.dt));
+    if (onDuty.length === 0) {
+      earnings[OWNER_NAME].tips += tip.tip;
+      earnings[OWNER_NAME].tipEvents++;
+      ownerEvents++;
+      return;
+    }
+    const share = tip.tip / onDuty.length;
+    onDuty.forEach(n => { earnings[n].tips += share; earnings[n].tipEvents++; });
+  });
+
+  const staffResults = empNames
+    .map(n => ({ name:n, tips:earnings[n].tips, events:earnings[n].tipEvents, shiftCount:shifts.filter(s=>s.name===n).length, isOwner:false }))
+    .filter(r => r.tips > 0)
+    .sort((a,b) => b.tips - a.tips);
+
+  const ownerResult = earnings[OWNER_NAME].tips > 0
+    ? [{ name:OWNER_NAME, tips:earnings[OWNER_NAME].tips, events:earnings[OWNER_NAME].tipEvents, shiftCount:'—', isOwner:true }]
+    : [];
+
+  showResults([...ownerResult, ...staffResults], ownerEvents);
+}
+
+function showResults(results, ownerEvents) {
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step3').style.display = 'block';
+  setSidebarStep(3); setPills(3);
+
+  const totalTips   = squareTips.reduce((s,t) => s+t.tip, 0);
+  const distributed = results.reduce((s,r) => s+r.tips, 0);
+  const ownerAmt    = results.find(r=>r.isOwner)?.tips || 0;
+  const refundTotal = Math.abs(squareRefunds.reduce((s,r)=>s+r.amt,0));
+
+  document.getElementById('empCountBadge').textContent = `${results.length} people`;
+  document.getElementById('metricGrid').innerHTML = `
+    <div class="metric"><div class="mlabel">Gross tips</div><div class="mval">$${(totalTips+refundTotal).toFixed(2)}</div></div>
+    <div class="metric"><div class="mlabel">After refunds</div><div class="mval">$${totalTips.toFixed(2)}</div></div>
+    <div class="metric"><div class="mlabel">Staff members</div><div class="mval">${results.filter(r=>!r.isOwner).length}</div></div>
+    <div class="metric"><div class="mlabel">Owner (Hope)</div><div class="mval" style="${ownerAmt>0?'color:#0E4F9F':''}">$${ownerAmt.toFixed(2)}</div></div>`;
+
+  const alerts = [];
+  if (squareRefunds.length > 0) {
+    alerts.push(makeAlert('info','info',`<strong>${squareRefunds.length} refund${squareRefunds.length>1?'s':''} ($${refundTotal.toFixed(2)})</strong> were netted out before distribution.`));
+  }
+  if (ownerEvents > 0) {
+    alerts.push(makeAlert('ok','ok',`<strong>${ownerEvents} tip${ownerEvents>1?'s':''} ($${ownerAmt.toFixed(2)})</strong> made when no staff were clocked in — credited to Hope Mays.`));
+  }
+  if (Math.abs(distributed - totalTips) > 0.02) {
+    alerts.push(makeAlert('warn','warn',`<strong>Rounding discrepancy:</strong> distributed $${distributed.toFixed(2)} vs pool $${totalTips.toFixed(2)}.`));
+  }
+
+  renderAlerts('resultsAlerts', alerts);
+
+  const maxTips = results.length ? Math.max(...results.map(r=>r.tips)) : 1;
+  const tbody   = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  results.forEach(r => {
+    const pct      = Math.round((r.tips/maxTips)*100);
+    const sharePct = Math.round((r.tips/(totalTips||1))*100);
+    const tr = document.createElement('tr');
+    if (r.isOwner) tr.className = 'owner-row';
+    tr.innerHTML = `
+      <td><div class="name-cell"><span class="emp-init${r.isOwner?' owner':''}">${initials(r.name)}</span>${r.name}${r.isOwner?'<span class="owner-tag">Owner</span>':''}</div></td>
+      <td>${r.events} tip${r.events!==1?'s':''}</td>
+      <td>${r.shiftCount}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div><span style="font-size:12px;color:#6b7280">${sharePct}%</span></div></td>
+      <td class="tip-amt">$${r.tips.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  window._results = results;
+  window._totalTips = totalTips;
+  window._refundTotal = refundTotal;
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function setBadge(id, msg, type) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  const cls  = type==='err'?'pill-err':type==='warn'?'pill-warn':'pill-ok';
+  const icon = type==='err'?'✖':type==='warn'?'⚠':'✔';
+  el.innerHTML = `<div class="file-pill ${cls}">${icon} ${msg}</div>`;
+}
+
+function renderAlerts(id, alerts) {
+  const el = document.getElementById(id);
+  el.style.display = alerts.length ? 'block' : 'none';
+  el.innerHTML = alerts.join('');
+}
+
+function setSidebarStep(n) {
+  ['sb1','sb2','sb3'].forEach((id,i) => {
+    document.getElementById(id).className = 'sidebar-item' + (i===n-1?' active':'');
+  });
+}
+
+function setPills(n) {
+  ['pill1','pill2','pill3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (i<n-1) el.className='topbar-step done';
+    else if (i===n-1) el.className='topbar-step active';
+    else el.className='topbar-step';
+  });
+}
+
+function exportCSV() {
+  if (!window._results) return;
+  let csv = 'Employee,Role,Tips Received,Shifts Worked,Total Tip Amount\n';
+  window._results.forEach(r => {
+    csv += `"${r.name}","${r.isOwner?'Owner':'Staff'}",${r.events},"${r.isOwner?'—':r.shiftCount}","$${r.tips.toFixed(2)}"\n`;
+  });
+  csv += `\nGross tips,,,,$${((window._totalTips||0)+(window._refundTotal||0)).toFixed(2)}`;
+  csv += `\nRefunds netted out,,,,-$${(window._refundTotal||0).toFixed(2)}`;
+  csv += `\nNet distributed,,,,$${(window._totalTips||0).toFixed(2)}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'meadows-tip-distribution.csv';
+  a.click();
+}
+
+function resetAll() {
+  squareTips=[]; squareRefunds=[]; squareMeta={}; shifts=[]; wiwMeta={};
+  ['step1','step2','step3'].forEach((id,i) => {
+    document.getElementById(id).style.display = i===0 ? 'block' : 'none';
+  });
+  ['squareBadge','squareAlerts','squarePreview','wiwBadge','wiwAlerts','wiwPreview'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('squareZone').classList.remove('has-file');
+  document.getElementById('wiwZone').classList.remove('has-file');
+  document.getElementById('toStep2Btn').disabled = true;
+  document.getElementById('calcBtn').disabled = true;
+  document.getElementById('squareFile').value = '';
+  document.getElementById('wiwFile').value = '';
+  setSidebarStep(1); setPills(1);
+}
+
+function goToStep2() {
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+  setSidebarStep(2); setPills(2);
+}
+</script>
