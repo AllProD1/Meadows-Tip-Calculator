@@ -37,3 +37,9 @@ The application runs in a web browser and uses JavaScript, HTML, and CSS. It use
 ## Disclaimer
 
 This tool is intended to assist with tip distribution and recordkeeping. Review the results for accuracy before using them for payroll or other financial records.
+
+## Acknowldgement
+
+This code was completely ai generated. I used this as an experience to explore problem solving with ai. This was a real problem that needed a solution. I engineered the
+prompts to lead to an accurate solution that was well tested. This code has been operational now for 5 months with no bugs or errors. The owners who commissioned me to do
+this project wanted ai to help solve the problem and it did. Also, I know that this now saves the employer 8 hours per pay period being a valuable asset to the company now.
