@@ -10,7 +10,7 @@ Download the Meadows Tip Distributor and run it directly in your web browser. No
 
 [Right-click here and select "Save Link As..." to download the HTML file](https://raw.githubusercontent.com/AllProD1/Meadows-Tip-Calculator/refs/heads/main/meadows_tip_distributor_v8.html)
 
-<a href="[path/to/your/file.html](https://raw.githubusercontent.com/AllProD1/Meadows-Tip-Calculator/refs/heads/main/meadows_tip_distributor_v8.html)" download>Click here to download the HTML file</a>
+<a href="[path/to/your/file.html](AllProD1/Meadows-Tip-Calculator/refs/heads/main/meadows_tip_distributor_v8.html)" download>Click here to download the HTML file</a>
 
 
 After downloading, open the `.html` file in your web browser to use the application.
