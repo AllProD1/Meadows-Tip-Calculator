@@ -13,8 +13,6 @@ Download the Meadows Tip Distributor and run it directly in your web browser. No
 After downloading, open the `.html` file in your web browser to use the application.
 
 
-After downloading, open the `.html` file in your web browser to use the application.
-
 ## Features
 
 - **Automated tip distribution:** Allocates tips among employees who were on shift when each tip was received.
