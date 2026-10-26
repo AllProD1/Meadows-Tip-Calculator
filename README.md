@@ -6,11 +6,11 @@ The Meadows Tip Distributor is a tool designed to simplify the process of distri
 
 ## Download
 
-Download the latest version of the Meadows Tip Distributor as a standalone HTML file:
+Download the Meadows Tip Distributor and run it directly in your web browser. No installation is required.
 
-[Download Meadows Tip Distributor](https://github.com/AllProD1/Meadows-Tip-Calculator/raw/refs/heads/main/meadows_tip_distributor_v8.html)
+[**Download Meadows Tip Distributor (.html)**](https://github.com/AllProD1/Meadows-Tip-Calculator/raw/refs/heads/main/meadows_tip_distributor_v8.html?download=1)
 
-After downloading, open the HTML file in your web browser to use the application. No installation is required.
+After downloading, open the `.html` file in your web browser to use the application.
 
 ## Features
 
